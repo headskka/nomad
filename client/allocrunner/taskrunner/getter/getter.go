@@ -1,6 +1,7 @@
 package getter
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -31,7 +32,6 @@ const (
 // is usually satisfied by taskenv.TaskEnv.
 type EnvReplacer interface {
 	ReplaceEnv(string) string
-	ReplaceEnvClient(string) string
 	ClientPath(string) (string, bool)
 }
 
@@ -140,8 +140,7 @@ func GetArtifact(taskEnv EnvReplacer, artifact *structs.TaskArtifact) error {
 	// Verify the destination is still in the task sandbox after interpolation
 	if escapes {
 		return newGetError(artifact.RelativeDest,
-			fmt.Errorf("artifact escapes the alloc directory rawDest=%s dest=%s", artifact.RelativeDest, dest),
-			// errors.New("artifact destination path escapes the alloc directory"),
+			errors.New("artifact destination path escapes the alloc directory"),
 			false)
 	}
 

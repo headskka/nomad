@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -725,10 +724,8 @@ func loadTemplateEnv(tmpls []*structs.Template, taskDir string, taskEnv *taskenv
 			continue
 		}
 
-		dest := taskEnv.ReplaceEnvClient(t.DestPath)
-		if !filepath.IsAbs(dest) {
-			dest = filepath.Join(taskDir, dest)
-		}
+		// we checked escape before we rendered the file
+		dest, _ := taskEnv.ClientPath(t.DestPath)
 		f, err := os.Open(dest)
 		if err != nil {
 			return nil, fmt.Errorf("error opening env template: %v", err)

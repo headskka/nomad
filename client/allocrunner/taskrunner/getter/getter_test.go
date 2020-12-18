@@ -26,28 +26,23 @@ type noopReplacer struct {
 	taskDir string
 }
 
+func clientPath(taskDir, path string) (string, bool) {
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(taskDir, path)
+	}
+	path = filepath.Clean(path)
+	if taskDir != "" && !helper.PathEscapesSandbox(taskDir, path) {
+		return path, false
+	}
+	return path, true
+}
+
 func (noopReplacer) ReplaceEnv(s string) string {
 	return s
 }
 
-func (r noopReplacer) ReplaceEnvClient(s string) string {
-	return r.ReplaceEnv(s)
-}
-
-func checkEscape(taskDir, testPath string) bool {
-	if taskDir != "" && !helper.PathEscapesSandbox(taskDir, testPath) {
-		return false
-	}
-	return true
-}
-
 func (r noopReplacer) ClientPath(p string) (string, bool) {
-	path := r.ReplaceEnv(p)
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(r.taskDir, path)
-	}
-	path = filepath.Clean(path)
-	escapes := checkEscape(r.taskDir, path)
+	path, escapes := clientPath(r.taskDir, r.ReplaceEnv(p))
 	return path, escapes
 }
 
@@ -67,16 +62,8 @@ func (upperReplacer) ReplaceEnv(s string) string {
 	return strings.ToUpper(s)
 }
 
-func (u upperReplacer) ReplaceEnvClient(s string) string {
-	return u.ReplaceEnv(s)
-}
-
 func (u upperReplacer) ClientPath(p string) (string, bool) {
-	path := u.ReplaceEnv(p)
-	if !filepath.IsAbs(path) {
-		path = filepath.Join(u.taskDir, path)
-	}
-	escapes := checkEscape(u.taskDir, path)
+	path, escapes := clientPath(u.taskDir, u.ReplaceEnv(p))
 	return path, escapes
 }
 

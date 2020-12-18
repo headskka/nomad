@@ -306,7 +306,7 @@ func (t *TaskEnv) ReplaceEnv(arg string) string {
 	return hargs.ReplaceEnv(arg, t.EnvMap, t.NodeAttrs)
 }
 
-// ReplaceEnvClient takes an arg and replaces all occurrences of client-specific
+// replaceEnvClient takes an arg and replaces all occurrences of client-specific
 // environment variables and Nomad variables.  If the variable is found in the
 // passed map it is replaced, otherwise the original string is returned.
 // The difference from ReplaceEnv client is potentially difference values for
@@ -314,8 +314,10 @@ func (t *TaskEnv) ReplaceEnv(arg string) string {
 // * NOMAD_ALLOC_DIR
 // * NOMAD_TASK_DIR
 // * NOMAD_SECRETS_DIR
+// and anything that was interpolated using them.
+//
 // See https://github.com/hashicorp/nomad/pull/9668
-func (t *TaskEnv) ReplaceEnvClient(arg string) string {
+func (t *TaskEnv) replaceEnvClient(arg string) string {
 	return hargs.ReplaceEnv(arg, t.EnvMapClient, t.NodeAttrs)
 }
 
@@ -332,7 +334,7 @@ func (t *TaskEnv) checkEscape(testPath string) bool {
 }
 
 func (t *TaskEnv) ClientPath(rawPath string) (string, bool) {
-	path := t.ReplaceEnvClient(rawPath)
+	path := t.replaceEnvClient(rawPath)
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(t.clientTaskDir, path)
 	}
